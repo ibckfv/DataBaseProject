@@ -199,7 +199,7 @@ WHERE order_id IN (
 
 # 7. ANY
 
-```
+``` sql
 SELECT * FROM orders
 WHERE total_cost > ANY (
     SELECT amount FROM payments WHERE method = 'card'
