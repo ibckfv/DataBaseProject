@@ -356,9 +356,8 @@ SELECT * FROM orders WHERE total_cost > 1000;
 
 Терминал 2
 
-BEGIN TRANSACTION ISOLATION LEVEL SERIALIZABLE;
-
 ``` sql
+BEGIN TRANSACTION ISOLATION LEVEL SERIALIZABLE;
 INSERT INTO orders (tariff_id, status, client_id, total_cost)
 VALUES (21, 'Новый', 1, 2000);
 
