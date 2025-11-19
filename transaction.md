@@ -1,3 +1,231 @@
+# Базовые запросы. BEGIN...COMMIT;
+
+``` sql
+BEGIN;
+
+INSERT INTO payments (payment_id, order_id, amount, payment_date, method, status)
+VALUES (5, 1, 1000.00, CURRENT_DATE, 'card', 'completed');
+
+UPDATE orders
+SET status = 'cancelled'
+WHERE order_id = 1;
+
+COMMIT;
+```
+
+``` sql
+BEGIN;
+
+INSERT INTO trips (trip_id, route_id, vehicle_id, departure_datetime, arrival_datetime, notes, driver_id)
+VALUES (4, 3, 101, CURRENT_DATE, CURRENT_DATE + INTERVAL '3 hours', 'эксперимент', 3);
+
+UPDATE vehicles
+SET status = 'assigned'
+WHERE vehicle_id = 101;
+
+COMMIT;
+```
+
+# Базовые запросы. BEGIN...ROLLBACK;
+
+``` sql
+BEGIN;
+
+INSERT INTO payments (payment_id, order_id, amount, payment_date, method, status)
+VALUES (6, 1, 1000.00, CURRENT_DATE, 'card', 'completed');
+
+UPDATE orders
+SET status = 'cancelled'
+WHERE order_id = 1;
+
+ROLLBACK;
+```
+
+``` sql
+BEGIN;
+
+INSERT INTO trips (trip_id, route_id, vehicle_id, departure_datetime, arrival_datetime, notes, driver_id)
+VALUES (5, 3, 101, CURRENT_DATE + INTERVAL '1 hours', CURRENT_DATE + INTERVAL '3 hours', 'эксперимент', 3);
+
+UPDATE vehicles
+SET status = 'assigned'
+WHERE vehicle_id = 101;
+
+ROLLBACK;
+```
+
+# Базовые запросы. ERROR_TRANSACTION
+
+``` sql
+BEGIN;
+
+INSERT INTO payments (payment_id, order_id, amount, payment_date, method, status)
+VALUES (6, 1, 1000.00, CURRENT_DATE, 'card', 'completed');
+
+UPDATE orders
+SET status = 'cancelled'
+WHERE order_id = 1;
+
+SELECT 1 / 0
+
+COMMIT;
+```
+
+``` sql
+BEGIN;
+
+INSERT INTO trips (trip_id, route_id, vehicle_id, departure_datetime, arrival_datetime, notes, driver_id)
+VALUES (5, 3, 101, CURRENT_DATE, CURRENT_DATE + INTERVAL '3 hours', 'эксперимент', 3);
+
+UPDATE vehicles
+SET status = 'assigned'
+WHERE vehicle_id = 101;
+
+SELECT 1 / 0
+
+COMMIT;
+```
+
+# READ UNCOMMITTED / READ COMMITTED
+
+``` sql
+BEGIN;
+
+SET TRANSACTION ISOLATION LEVEL READ UNCOMMITTED;
+
+SELECT order_id, total_cost
+FROM orders
+WHERE order_id = 1; 
+
+UPDATE orders
+SET total_cost = COALESCE(total_cost, 0) + 500
+WHERE order_id = 1;
+```
+
+![photo_2025-11-19 10 40 17](https://github.com/user-attachments/assets/4afbc638-629a-4483-984e-fd13e5ac997f)
+
+
+``` sql
+BEGIN;
+
+SET TRANSACTION ISOLATION LEVEL READ COMMITTED; 
+
+SELECT route_id, distance_km
+FROM routes
+WHERE route_id = 1;
+
+COMMIT;
+```
+
+#
+ 
+``` sql
+BEGIN;
+
+SET TRANSACTION ISOLATION LEVEL READ COMMITTED;
+
+
+SELECT order_id, total_cost
+FROM orders
+WHERE order_id = 1; 
+
+UPDATE orders
+SET total_cost = COALESCE(total_cost, 0) + 500
+WHERE order_id = 1;
+```
+
+![photo_2025-11-19 10 49 22](https://github.com/user-attachments/assets/dab85b5e-2cbe-4e84-88bb-5824929c4445)
+
+![photo_2025-11-19 10 49 24](https://github.com/user-attachments/assets/cfbb66b9-6284-4c00-ae29-088b4f998055)
+
+
+
+``` sql
+BEGIN;
+
+SET TRANSACTION ISOLATION LEVEL READ UNCOMMITTED;
+
+
+SELECT order_id, total_cost
+FROM orders
+WHERE order_id = 1; 
+
+COMMIT;
+```
+
+# READ COMMITTED
+
+``` sql
+BEGIN;
+
+SET TRANSACTION ISOLATION LEVEL READ COMMITTED;
+
+SELECT order_id, status
+FROM orders
+WHERE order_id = 1; 
+
+-- пауза
+
+SELECT order_id, status
+FROM orders
+WHERE order_id = 1;
+
+COMMIT;
+```
+
+![photo_2025-11-19 10 58 45](https://github.com/user-attachments/assets/7ed71e81-e87c-4b5b-ab97-dfe23fcb3c61)
+
+
+``` sql
+BEGIN;
+
+SET TRANSACTION ISOLATION LEVEL READ COMMITTED;
+
+UPDATE orders
+SET status = 'completed'
+WHERE order_id = 1; 
+
+COMMIT;
+```
+
+![photo_2025-11-19 10 58 47](https://github.com/user-attachments/assets/373ff4fe-9484-4020-8c22-18d42611c53a)
+
+#
+
+``` sql
+BEGIN;
+
+SET TRANSACTION ISOLATION LEVEL READ COMMITTED;
+
+SELECT vehicle_id, mileage
+FROM vehicles
+WHERE vehicle_id = 1; 
+
+-- пауза
+
+SELECT vehicle_id, mileage
+FROM vehicles
+WHERE vehicle_id = 1;
+
+COMMIT;
+```
+
+![photo_2025-11-19 11 00 13](https://github.com/user-attachments/assets/c7934d3c-0e11-4448-aea0-84293c0fede6)
+
+``` sql
+BEGIN;
+
+SET TRANSACTION ISOLATION LEVEL READ COMMITTED;
+
+UPDATE vehicles
+SET mileage = COALESCE(mileage, 0) + 100
+WHERE vehicle_id = 1;  -- тот же id
+
+COMMIT;
+```
+
+![photo_2025-11-19 11 00 14](https://github.com/user-attachments/assets/fffea49a-f231-43aa-a9e0-15750b089e29)
+
 # REPEATABLE READ
 
 **Первый пример**
