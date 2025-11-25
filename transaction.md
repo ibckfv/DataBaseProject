@@ -306,43 +306,32 @@ SELECT COUNT(*) FROM cargos;
 Терминал 1
 
 ``` sql
-BEGIN TRANSACTION ISOLATION LEVEL SERIALIZABLE;
-
-INSERT INTO clients(name) VALUES ('ConflictClient');
+BEGIN ISOLATION LEVEL SERIALIZABLE;
+SELECT * FROM clients WHERE name = 'Новое имя';
 ```
-
-<img width="412" height="96" alt="Снимок экрана 2025-11-19 090348" src="https://github.com/user-attachments/assets/a4cedc8b-5a18-4e16-aec8-1910d6384f57" />
-
 
 Терминал 2
 
 ``` sql
-BEGIN TRANSACTION ISOLATION LEVEL SERIALIZABLE;
-
-INSERT INTO clients(name) VALUES ('ConflictClient');
+BEGIN ISOLATION LEVEL SERIALIZABLE;
+SELECT * FROM clients WHERE name = 'Новое имя';
+UPDATE clients SET name = 'ConflictClient' WHERE name = 'Новое имя';
 ```
 
-Терминал 1
+Терминал 2
 
 ``` sql
 COMMIT;
 ```
 
-Терминал 2
+Терминал 1
 
 ``` sql
-Ошибка
+UPDATE clients SET name = 'Другое имя' WHERE name = 'Новое имя';
 ```
 
-Терминал 2 - Без ошибки
+<img width="663" height="108" alt="image" src="https://github.com/user-attachments/assets/152dee3a-0763-4483-96b6-e3b22203d131" />
 
-``` sql
-BEGIN TRANSACTION ISOLATION LEVEL SERIALIZABLE;
-
-INSERT INTO clients(name) VALUES ('ConflictClient');  
-
-ROLLBACK; 
-```
 
 **Второй пример**
 
@@ -369,6 +358,9 @@ COMMIT;
 ``` sql
 SELECT * FROM orders WHERE total_cost > 1000;
 ```
+
+<img width="693" height="175" alt="image" src="https://github.com/user-attachments/assets/e7f45989-5077-4649-a996-e0a50b5adba3" />
+
 
 Терминал 1 - Откат
 
