@@ -5,7 +5,7 @@
 Добавить новый заказ
 
 ``` sql
-CREATE OR REPLACE PROCEDURE add_new_order(
+CREATE PROCEDURE add_new_order(
     p_client_id INT,
     p_tariff_id INT,
     p_status VARCHAR DEFAULT 'Новый'
@@ -27,7 +27,7 @@ $$;
 Обновить статус автомобиля
 
 ``` sql
-CREATE OR REPLACE PROCEDURE update_vehicle_status(
+CREATE PROCEDURE update_vehicle_status(
     p_vehicle_id INT,
     p_status VARCHAR
 )
@@ -46,7 +46,7 @@ $$;
 Увеличить вместимость склада
 
 ``` sql
-CREATE OR REPLACE PROCEDURE increase_warehouse_capacity(
+CREATE PROCEDURE increase_warehouse_capacity(
     p_warehouse_id INT,
     p_delta NUMERIC
 )
@@ -78,7 +78,7 @@ WHERE prokind = 'p';
 Получить сумму стоимости заказов клиента
 
 ``` sql
-CREATE OR REPLACE FUNCTION get_client_total_cost(p_client_id INT)
+CREATE FUNCTION get_client_total_cost(p_client_id INT)
 RETURNS NUMERIC AS $$
 BEGIN
     RETURN (
@@ -95,7 +95,7 @@ $$ LANGUAGE plpgsql;
 Получить количество грузов по заказу
 
 ``` sql
-CREATE OR REPLACE FUNCTION count_cargos_for_order(p_order_id INT)
+CREATE FUNCTION count_cargos_for_order(p_order_id INT)
 RETURNS INT AS $$
 BEGIN
     RETURN (
@@ -112,7 +112,7 @@ $$ LANGUAGE plpgsql;
 Получить вес груза по ID
 
 ``` sql
-CREATE OR REPLACE FUNCTION get_cargo_weight(p_cargo_id INT)
+CREATE FUNCTION get_cargo_weight(p_cargo_id INT)
 RETURNS DOUBLE PRECISION AS $$
 BEGIN
     RETURN (
@@ -143,7 +143,7 @@ WHERE n.nspname = current_schema();
 Итоговая цена груза
 
 ``` sql
-CREATE OR REPLACE FUNCTION calculate_cargo_price(p_cargo_id INT)
+CREATE FUNCTION calculate_cargo_price(p_cargo_id INT)
 RETURNS NUMERIC AS $$
 DECLARE
     v_weight DOUBLE PRECISION;
@@ -167,7 +167,7 @@ $$ LANGUAGE plpgsql;
 Проверить доступность автомобиля
 
 ``` sql
-CREATE OR REPLACE FUNCTION is_vehicle_available(p_vehicle_id INT)
+CREATE FUNCTION is_vehicle_available(p_vehicle_id INT)
 RETURNS BOOLEAN AS $$
 DECLARE
     v_status VARCHAR;
@@ -186,7 +186,7 @@ $$ LANGUAGE plpgsql;
 Сколько заказов в маршруте
 
 ``` sql
-CREATE OR REPLACE FUNCTION count_orders_in_trip(p_trip_id INT)
+CREATE FUNCTION count_orders_in_trip(p_trip_id INT)
 RETURNS INT AS $$
 DECLARE
     v_cnt INT;
