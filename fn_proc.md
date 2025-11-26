@@ -242,3 +242,252 @@ BEGIN
     WHERE weight < 1;
 END $$;
 ```
+
+# IF
+
+``` sql
+CREATE OR REPLACE FUNCTION categorize_client_by_contracts(p_client_id INT)
+RETURNS VARCHAR(20)
+LANGUAGE plpgsql
+AS $$
+DECLARE
+    v_contracts_count INT;
+    v_category        VARCHAR(20);
+BEGIN
+    SELECT COUNT(*)
+    INTO v_contracts_count
+    FROM contracts
+    WHERE client_id = p_client_id;
+
+    IF v_contracts_count = 0 THEN
+        v_category := 'Новый';
+    ELSIF v_contracts_count BETWEEN 1 AND 3 THEN
+        v_category := 'Постоянный';
+    ELSE
+        v_category := 'Ключевой';
+    END IF;
+
+    RETURN v_category;
+END;
+$$;
+
+SELECT categorize_client_by_contracts(1) AS client_category;
+```
+
+<img width="618" height="112" alt="Снимок экрана 2025-11-26 в 10 40 23" src="https://github.com/user-attachments/assets/dc755de9-8aba-49d6-9bf3-8609b9c215ba" />
+
+<img width="167" height="65" alt="Снимок экрана 2025-11-26 в 10 35 24" src="https://github.com/user-attachments/assets/bf2ea0c2-4e37-4004-a5f5-dd3fef3efcb2" />
+
+# CASE
+
+``` sql
+CREATE OR REPLACE FUNCTION categorize_vehicle_by_mileage(p_vehicle_id INT)
+RETURNS VARCHAR(20)
+LANGUAGE plpgsql
+AS $$
+DECLARE
+    v_mileage  NUMERIC(10,2);
+    v_category VARCHAR(20);
+BEGIN
+    SELECT mileage
+    INTO v_mileage
+    FROM vehicles
+    WHERE vehicle_id = p_vehicle_id;
+
+    v_category := CASE
+        WHEN v_mileage IS NULL THEN 'Неизвестно'
+        WHEN v_mileage < 50000 THEN 'Новый'
+        WHEN v_mileage BETWEEN 50000 AND 200000 THEN 'В эксплуатации'
+        ELSE 'Требует обновления'
+    END;
+
+    RETURN v_category;
+END;
+$$;
+
+SELECT categorize_vehicle_by_mileage(1) AS vehicle_category;
+
+```
+
+<img width="618" height="66" alt="Снимок экрана 2025-11-26 в 10 41 17" src="https://github.com/user-attachments/assets/73684b30-aeaa-4d1d-a749-435fb24b3fc8" />
+
+<img width="168" height="66" alt="Снимок экрана 2025-11-26 в 10 39 54" src="https://github.com/user-attachments/assets/1fcda690-6e37-4cba-990c-ffb04bbd3613" />
+
+
+# WHILE
+
+``` sql
+CREATE OR REPLACE PROCEDURE create_test_routes(p_count INT)
+LANGUAGE plpgsql
+AS $$
+DECLARE
+    i INT := 1;
+BEGIN
+    WHILE i <= p_count LOOP
+        INSERT INTO routes (departure_city, arrival_city, distance_km, estimated_time)
+        VALUES (
+            'Test City ' || i,
+            'Test Dest ' || i,
+            100 * i,
+            make_interval(hours => i)
+        );
+
+        i := i + 1;
+    END LOOP;
+END;
+$$;
+
+CALL create_test_routes(3);
+SELECT * FROM routes WHERE departure_city LIKE 'Test City%';
+```
+
+<img width="620" height="118" alt="Снимок экрана 2025-11-26 в 10 49 04" src="https://github.com/user-attachments/assets/8fac91dd-1747-4392-a992-436e615f5113" />
+
+``` sql
+CREATE OR REPLACE PROCEDURE increment_vehicle_mileage(
+    p_vehicle_id INT,
+    p_steps      INT,
+    p_increment  NUMERIC
+)
+LANGUAGE plpgsql
+AS $$
+DECLARE
+    i INT := 0;
+BEGIN
+    WHILE i < p_steps LOOP
+        UPDATE vehicles
+        SET mileage = COALESCE(mileage, 0) + p_increment
+        WHERE vehicle_id = p_vehicle_id;
+
+        i := i + 1;
+    END LOOP;
+END;
+$$;
+
+CALL increment_vehicle_mileage(1, 5, 10);  -- +50 к пробегу
+```
+
+<img width="805" height="68" alt="Снимок экрана 2025-11-26 в 10 50 37" src="https://github.com/user-attachments/assets/aca91c05-de43-4c85-86eb-a611e78787bb" />
+
+<img width="801" height="65" alt="Снимок экрана 2025-11-26 в 10 51 21" src="https://github.com/user-attachments/assets/19adcf09-f942-4812-9cfa-75a255d5adb9" />
+
+# EXCEPTION
+
+``` sql
+CREATE OR REPLACE PROCEDURE safe_insert_client(p_name VARCHAR)
+LANGUAGE plpgsql
+AS $$
+BEGIN
+    BEGIN
+        INSERT INTO clients (name)
+        VALUES (p_name);
+
+        RAISE NOTICE 'Клиент "%" успешно создан', p_name;
+    EXCEPTION
+        WHEN unique_violation THEN
+            RAISE NOTICE 'Клиент "%" уже существует, пропускаем вставку', p_name;
+    END;
+END;
+$$;
+
+CALL safe_insert_client('ООО "Ромашка"');
+```
+
+<img width="523" height="60" alt="Снимок экрана 2025-11-26 в 10 54 08" src="https://github.com/user-attachments/assets/4c6af469-b282-4941-99cb-1f72b6f4f77f" />
+
+<img width="289" height="188" alt="Снимок экрана 2025-11-26 в 10 54 24" src="https://github.com/user-attachments/assets/403a7054-1368-4ca3-aa2a-09fd4d7af10c" />
+
+``` sql
+CREATE OR REPLACE FUNCTION calc_avg_payment_for_order(p_order_id INT)
+RETURNS NUMERIC
+LANGUAGE plpgsql
+AS $$
+DECLARE
+    v_sum   NUMERIC;
+    v_cnt   INT;
+    v_avg   NUMERIC;
+BEGIN
+    SELECT COALESCE(SUM(amount), 0), COUNT(*)
+    INTO v_sum, v_cnt
+    FROM payments
+    WHERE order_id = p_order_id;
+
+    BEGIN
+        v_avg := v_sum / v_cnt;  
+    EXCEPTION
+        WHEN division_by_zero THEN
+            RAISE NOTICE 'Для заказа % нет платежей', p_order_id;
+            v_avg := NULL;
+    END;
+
+    RETURN v_avg;
+END;
+$$;
+
+SELECT ROUND (calc_avg_payment_for_order(5), 2) AS avg_payment;
+```
+
+<img width="718" height="110" alt="Снимок экрана 2025-11-26 в 11 01 04" src="https://github.com/user-attachments/assets/8afaddb8-1d1b-4055-ae48-e9659daee1ef" />
+
+<img width="145" height="66" alt="Снимок экрана 2025-11-26 в 11 01 18" src="https://github.com/user-attachments/assets/6606ebdb-0868-4a91-8772-d721d5660319" />
+
+# RAISE
+
+``` sql
+CREATE OR REPLACE PROCEDURE report_orders_stats()
+LANGUAGE plpgsql
+AS $$
+DECLARE
+    v_cnt_orders  INT;
+    v_sum_total   NUMERIC;
+BEGIN
+    SELECT COUNT(*), COALESCE(SUM(total_cost), 0)
+    INTO v_cnt_orders, v_sum_total
+    FROM orders;
+
+    RAISE NOTICE 'Всего заказов: %, суммарная стоимость: %', v_cnt_orders, v_sum_total;
+END;
+$$;
+
+CALL report_orders_stats();
+```
+
+<img width="488" height="92" alt="Снимок экрана 2025-11-26 в 11 02 13" src="https://github.com/user-attachments/assets/b8d9cf80-aaba-4b47-bc0a-1b03d8fa1de8" />
+
+``` sql
+CREATE OR REPLACE FUNCTION check_order_exists(p_order_id INT)
+RETURNS VOID
+LANGUAGE plpgsql
+AS $$
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM orders WHERE order_id = p_order_id) THEN
+        RAISE EXCEPTION 'Заказ % не найден', p_order_id;
+    ELSE
+        RAISE NOTICE 'Заказ % существует', p_order_id;
+    END IF;
+END;
+$$;
+
+SELECT check_order_exists(1);      
+```
+
+<img width="207" height="20" alt="Снимок экрана 2025-11-26 в 11 05 29" src="https://github.com/user-attachments/assets/8c331a3f-9432-46cd-9201-f6569d714763" />
+
+``` sql
+CREATE OR REPLACE FUNCTION check_order_exists(p_order_id INT)
+RETURNS VOID
+LANGUAGE plpgsql
+AS $$
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM orders WHERE order_id = p_order_id) THEN
+        RAISE EXCEPTION 'Заказ % не найден', p_order_id;
+    ELSE
+        RAISE NOTICE 'Заказ % существует', p_order_id;
+    END IF;
+END;
+$$;
+
+SELECT check_order_exists(5);      
+```
+
+<img width="217" height="30" alt="Снимок экрана 2025-11-26 в 11 06 02" src="https://github.com/user-attachments/assets/4827c7b2-bc88-4c71-ab0d-4daaf34fe24f" />
