@@ -127,14 +127,13 @@ $$ LANGUAGE plpgsql;
 # Запрос просмотра всех функций
 
 ``` sql
-SELECT p.proname AS function_name,
-       pg_get_functiondef(p.oid) AS definition
-FROM pg_proc p
-JOIN pg_namespace n ON n.oid = p.pronamespace
-WHERE n.nspname = current_schema();
+select routine_name, routine_type
+from information_schema.routines
+where routine_type = 'FUNCTION' and routine_schema = 'public'
 ```
 
-<img width="277" height="328" alt="Снимок экрана 2025-11-25 213609" src="https://github.com/user-attachments/assets/1576d47f-d453-481b-974b-e2143d8c8458" />
+
+<img width="388" height="238" alt="image" src="https://github.com/user-attachments/assets/888e67b6-4220-40b1-9640-b4328dfcf1a8" />
 
 # Функции с переменными 3 шт
 
