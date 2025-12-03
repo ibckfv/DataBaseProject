@@ -21,6 +21,11 @@ FOR EACH ROW
 EXECUTE FUNCTION trg_fill_cost();
 ```
 
+<img width="528" height="62" alt="Снимок экрана 2025-12-03 093307" src="https://github.com/user-attachments/assets/359c31ae-52fc-4e3d-b183-4b6898c97a3b" />
+<img width="515" height="87" alt="Снимок экрана 2025-12-03 093329" src="https://github.com/user-attachments/assets/e72a4694-ee31-45f0-b825-b401685a1d2e" />
+<img width="493" height="77" alt="Снимок экрана 2025-12-03 093334" src="https://github.com/user-attachments/assets/2e504068-7173-40d4-b097-8f83e1e4a3b3" />
+
+
 **Второй пример**
 
 Логирование создания заказа
@@ -40,6 +45,11 @@ AFTER INSERT ON orders
 FOR EACH ROW
 EXECUTE FUNCTION trg_log_new_order();
 ```
+
+<img width="642" height="57" alt="Снимок экрана 2025-12-03 093415" src="https://github.com/user-attachments/assets/d27feff7-ed10-45b3-9c2d-aafbb2dfa5ff" />
+<img width="262" height="33" alt="Снимок экрана 2025-12-03 094202" src="https://github.com/user-attachments/assets/45de549c-af14-4748-b748-8696fc295b48" />
+<img width="738" height="108" alt="Снимок экрана 2025-12-03 093513" src="https://github.com/user-attachments/assets/12dfbcfc-f522-488e-a806-4141236af36f" />
+
 
 # Триггеры с OLD
 
@@ -63,6 +73,10 @@ FOR EACH ROW
 EXECUTE FUNCTION trg_archive_order();
 ```
 
+<img width="818" height="59" alt="Снимок экрана 2025-12-03 093608" src="https://github.com/user-attachments/assets/be0d2774-1da1-4ad5-8172-6600c8517b09" />
+<img width="313" height="31" alt="Снимок экрана 2025-12-03 093632" src="https://github.com/user-attachments/assets/2173e420-23ae-40d3-bfcd-0cebeaf6ddf5" />
+
+
 **Второй пример**
 
 Логирование удаления
@@ -82,6 +96,10 @@ AFTER DELETE ON orders
 FOR EACH ROW
 EXECUTE FUNCTION trg_log_delete_order();
 ```
+
+<img width="267" height="31" alt="Снимок экрана 2025-12-03 093730" src="https://github.com/user-attachments/assets/2af237db-4173-4be6-a7fb-e96e8dc50ab7" />
+<img width="739" height="30" alt="Снимок экрана 2025-12-03 093743" src="https://github.com/user-attachments/assets/aeb4a7ec-6c58-40d6-ad65-77c90b2aea3b" />
+
 
 # BEFORE триггеры
 
@@ -106,6 +124,11 @@ FOR EACH ROW
 EXECUTE FUNCTION trg_block_update_delivered();
 ```
 
+<img width="641" height="59" alt="Снимок экрана 2025-12-03 093817" src="https://github.com/user-attachments/assets/0412e578-75d3-4d52-a276-d36fac470b23" />
+<img width="280" height="76" alt="Снимок экрана 2025-12-03 093856" src="https://github.com/user-attachments/assets/62a0181f-06cb-4217-9e9f-5cc256b5b298" />
+<img width="764" height="125" alt="Снимок экрана 2025-12-03 093852" src="https://github.com/user-attachments/assets/ed33f293-80b4-4665-a259-fad210ce8287" />
+
+
 **Второй пример**
 
 Проверка корректности веса
@@ -126,6 +149,10 @@ BEFORE INSERT ON cargos
 FOR EACH ROW
 EXECUTE FUNCTION trg_check_weight();
 ```
+
+<img width="758" height="55" alt="Снимок экрана 2025-12-03 094023" src="https://github.com/user-attachments/assets/7646df6d-696c-4972-91ac-8a2548b00267" />
+<img width="673" height="145" alt="Снимок экрана 2025-12-03 094033" src="https://github.com/user-attachments/assets/9db77f33-af49-42be-99a3-b7e204323a11" />
+
 
 # AFTER триггеры
 
@@ -148,6 +175,11 @@ AFTER UPDATE ON orders
 FOR EACH ROW
 EXECUTE FUNCTION trg_log_status_change();
 ```
+
+<img width="813" height="80" alt="Снимок экрана 2025-12-03 094142" src="https://github.com/user-attachments/assets/035eb121-9e30-4d83-aa49-845d32bd2e8b" />
+<img width="262" height="33" alt="Снимок экрана 2025-12-03 094202" src="https://github.com/user-attachments/assets/011fdd43-d4ed-44c2-ac5b-c5f7cbbd9a36" />
+<img width="804" height="30" alt="Снимок экрана 2025-12-03 094213" src="https://github.com/user-attachments/assets/53d4b510-07a0-4f13-b0bf-e3a393386e61" />
+
 
 AFTER INSERT: создание документа после счёта (invoice)
 
