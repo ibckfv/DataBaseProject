@@ -211,6 +211,14 @@ FOR EACH ROW
 EXECUTE FUNCTION trg_create_invoice_document();
 ```
 
+``` sql
+INSERT INTO invoices(invoice_id, order_id, amount)
+VALUES (2001, 1, 500.00);
+```
+<img width="417" height="69" alt="Снимок экрана 2025-12-03 в 10 36 27" src="https://github.com/user-attachments/assets/8792ceb3-960a-4a4e-8339-1ae29e25cad3" />
+
+<img width="415" height="93" alt="Снимок экрана 2025-12-03 в 10 36 47" src="https://github.com/user-attachments/assets/3d1e507b-9d49-45a9-980e-5c5134b98587" />
+
 # Row level
 
 Проверка веса груза
@@ -231,6 +239,21 @@ BEFORE INSERT OR UPDATE ON cargos
 FOR EACH ROW
 EXECUTE FUNCTION trg_check_cargo_weight();
 ```
+
+``` sql
+INSERT INTO cargos(cargo_id, weight, description)
+VALUES (3001, 0, 'Паллет с товарами');
+```
+
+<img width="485" height="61" alt="Снимок экрана 2025-12-03 в 10 41 09" src="https://github.com/user-attachments/assets/fb5dbf8c-6054-4b10-826a-09fd3f4b1d5b" />
+
+``` sql
+UPDATE cargos
+SET weight = -5
+WHERE cargo_id = 6;
+```
+
+<img width="529" height="65" alt="Снимок экрана 2025-12-03 в 10 45 04" src="https://github.com/user-attachments/assets/7640144e-1389-4a9d-9827-3529c3dd5cb4" />
 
 Авто-обновление mileage машины при поездке
 
@@ -254,6 +277,16 @@ FOR EACH ROW
 EXECUTE FUNCTION trg_update_vehicle_mileage();
 ```
 
+``` sql
+INSERT INTO trips(trip_id, route_id, vehicle_id, departure_datetime,  arrival_datetime, notes, driver_id)
+VALUES (1, 3, 1, CURRENT_DATE, CURRENT_DATE + interval '1 day', 'no', 1);
+```
+
+<img width="793" height="68" alt="Снимок экрана 2025-12-03 в 10 51 58" src="https://github.com/user-attachments/assets/037ae08b-ed85-43c9-93cb-b2b16d939211" />
+
+<img width="793" height="65" alt="Снимок экрана 2025-12-03 в 10 52 20" src="https://github.com/user-attachments/assets/640dd511-ceed-444e-b673-80cae4ea97eb" />
+
+
 # statement level
 
 Логирование массового обновления таблицы orders
@@ -263,7 +296,9 @@ CREATE TABLE order_mass_update_log(
     updated_at TIMESTAMP DEFAULT now(),
     user_name TEXT
 );
+```
 
+``` sql
 CREATE OR REPLACE FUNCTION trg_log_mass_update_orders()
 RETURNS trigger AS $$
 BEGIN
@@ -278,6 +313,17 @@ AFTER UPDATE ON orders
 FOR EACH STATEMENT
 EXECUTE FUNCTION trg_log_mass_update_orders();
 ```
+
+``` sql
+UPDATE orders
+SET total_cost = total_cost * 1.05
+WHERE status = 'Новый';
+```
+
+<img width="323" height="82" alt="Снимок экрана 2025-12-03 в 10 55 39" src="https://github.com/user-attachments/assets/9958ee26-3c7f-4db9-b1b1-66d91b57763d" />
+
+<img width="325" height="63" alt="Снимок экрана 2025-12-03 в 10 55 44" src="https://github.com/user-attachments/assets/557e38d9-7078-452d-9191-4e59985e3517" />
+
 
 Логирование массового удаления из cargos
 
@@ -301,6 +347,11 @@ AFTER DELETE ON cargos
 FOR EACH STATEMENT
 EXECUTE FUNCTION trg_cargo_mass_delete();
 ```
+
+<img width="281" height="83" alt="Снимок экрана 2025-12-03 в 10 57 21" src="https://github.com/user-attachments/assets/dfcb6a42-13cb-4ca0-8a70-e32613ce7627" />
+
+<img width="397" height="67" alt="Снимок экрана 2025-12-03 в 10 57 50" src="https://github.com/user-attachments/assets/91dbaf1b-344c-4a44-ad1f-5222fbe25a3e" />
+
 
 # Запрос на просмотр триггеров
 
