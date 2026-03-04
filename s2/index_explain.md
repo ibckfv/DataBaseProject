@@ -1,12 +1,16 @@
-## 1.
+## 1. 
 ```sql
 EXPLAIN (ANALYZE, BUFFERS)
-SELECT * FROM payments WHERE amount > 1000;
+SELECT client_id, name 
+FROM clients 
+WHERE name = 'Клиент 1000 Кузнецов';
 ```
 ### Без индексов
-<img width="875" height="266" alt="image" src="https://github.com/user-attachments/assets/d21df70a-6737-45c0-b68a-4897d3447bba" />
+<img width="970" height="296" alt="Снимок экрана 2026-02-25 112523" src="https://github.com/user-attachments/assets/7f79fc67-27fb-42d1-a063-e8a6ac9a628a" />
+### Hash индекс
+<img width="991" height="238" alt="Снимок экрана 2026-02-25 112335" src="https://github.com/user-attachments/assets/a0b11d4e-763a-4e80-bcb6-995daa88709f" />
 ### B-tree индекс
-<img width="882" height="267" alt="image" src="https://github.com/user-attachments/assets/2ec1b3f7-c20d-44bc-856c-ef4b52a916e7" />
+<img width="992" height="298" alt="Снимок экрана 2026-02-25 112451" src="https://github.com/user-attachments/assets/63fcdc99-d8ee-4a7c-aaaa-c96bce1ee9d9" />
 ## 2.
 ```sql
 EXPLAIN (ANALYZE, BUFFERS)
