@@ -1,0 +1,155 @@
+## Docker Compose 
+```
+services:
+  postgres:
+    image: postgres:17
+    container_name: logistics_db
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: 1469
+      POSTGRES_DB: logistics_db
+    ports:
+      - "5435:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    command: >
+      postgres 
+      -c wal_level=replica
+      -c max_wal_senders=10
+      -c max_replication_slots=10
+      -c wal_keep_size=1GB
+      -c hot_standby=on
+      -c listen_addresses=*
+    networks:
+      - logistics_network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d logistics_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  replica1:
+    image: postgres:17
+    container_name: logistics_db_replica_1
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: 1469
+    ports:
+      - "5433:5432"
+    volumes:
+      - pg_replica1_data:/var/lib/postgresql/data
+    command: >
+      postgres 
+      -c hot_standby=on
+      -c listen_addresses=*
+    networks:
+      - logistics_network
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  replica2:
+    image: postgres:17
+    container_name: logistics_db_replica_2
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: 1469
+    ports:
+      - "5434:5432"
+    volumes:
+      - pg_replica2_data:/var/lib/postgresql/data
+    command: >
+      postgres 
+      -c hot_standby=on
+      -c listen_addresses=*
+    networks:
+      - logistics_network
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: my_pgadmin
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@admin.com  
+      PGADMIN_DEFAULT_PASSWORD: admin         
+    ports:
+      - "5050:80" 
+    networks:
+      - logistics_network
+    restart: unless-stopped
+    depends_on:
+      - postgres   
+
+  flyway:
+    image: flyway/flyway:latest
+    container_name: flyway
+    command: migrate
+    volumes:
+      - ./migrations:/flyway/sql
+    environment:
+      FLYWAY_URL: jdbc:postgresql://postgres:5432/logistics_db
+      FLYWAY_USER: postgres
+      FLYWAY_PASSWORD: 1469
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - logistics_network
+
+  postgres-exporter:
+    image: prometheuscommunity/postgres-exporter:latest
+    ports:
+      - "9187:9187"
+    environment:
+      DATA_SOURCE_NAME: "postgresql://postgres:1469@postgres:5432/logistics_db?sslmode=disable"
+    restart: unless-stopped
+    networks:
+      - logistics_network
+    depends_on:
+      - postgres
+
+  prometheus:
+    image: prom/prometheus:latest
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml:ro
+    restart: unless-stopped
+    networks:
+      - logistics_network
+    depends_on:
+      - postgres-exporter
+
+  grafana:
+    image: grafana/grafana:latest
+    ports:
+      - "3000:3000"
+    restart: unless-stopped
+    networks:
+      - logistics_network
+    depends_on:
+      - prometheus
+
+volumes:
+  postgres_data:
+    driver: local
+  pgadmin_data:
+  pg_replica1_data:
+    driver: local
+  pg_replica2_data:
+    driver: local
+
+networks:
+  logistics_network:
+    driver: bridge
+```
+
+## Replication
+
+<img width="1450" height="92" alt="image" src="https://github.com/user-attachments/assets/9f780902-d94b-416b-998a-e37f1ece13f5" />
+
+<img width="1448" height="97" alt="image" src="https://github.com/user-attachments/assets/a149a0a3-b12a-4b44-9f90-c385b7b6305c" />
+
+<img width="1453" height="535" alt="image" src="https://github.com/user-attachments/assets/76f983de-df0e-4e27-afba-072a0fc87750" />
