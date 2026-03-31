@@ -184,3 +184,73 @@ CREATE PUBLICATION orders_pub FOR TABLE orders_partitioned
   Обычная несекционированная таблица
 
   Таблица с другим ключом секционирования
+
+## Шардирование 
+
+### Шарды
+
+```sql
+CREATE TABLE orders_shard (
+    order_id SERIAL PRIMARY KEY,
+    client_id INTEGER NOT NULL,
+    total_cost NUMERIC(12,2),
+    status VARCHAR(20),
+    created_at TIMESTAMP DEFAULT now()
+);
+```
+
+### Роутер
+
+```sql
+CREATE EXTENSION postgres_fdw;
+
+CREATE SERVER shard1_server
+    FOREIGN DATA WRAPPER postgres_fdw
+    OPTIONS (host '172.18.0.1', dbname 'postgres', port '5437');
+
+CREATE SERVER shard2_server
+    FOREIGN DATA WRAPPER postgres_fdw
+    OPTIONS (host '172.18.0.1', dbname 'postgres', port '5438');
+
+CREATE USER MAPPING FOR current_user
+    SERVER shard1_server
+    OPTIONS (user 'postgres', password '');
+
+CREATE USER MAPPING FOR current_user
+    SERVER shard2_server
+    OPTIONS (user 'postgres', password '');
+
+IMPORT FOREIGN SCHEMA public
+    FROM SERVER shard1_server
+    INTO public;
+```
+
+```sql
+CREATE TABLE orders_global (
+    order_id INTEGER,
+    client_id INTEGER,
+    total_cost NUMERIC(12,2),
+    status VARCHAR(20),
+    created_at TIMESTAMP
+) PARTITION BY RANGE (client_id);
+```
+
+```sql
+CREATE FOREIGN TABLE orders_shard1
+    PARTITION OF orders_global
+    FOR VALUES FROM (1) TO (10001)
+    SERVER shard1_server
+    OPTIONS (schema_name 'public', table_name 'orders_shard');
+
+CREATE FOREIGN TABLE orders_shard2
+    PARTITION OF orders_global
+    FOR VALUES FROM (10001) TO (20001)
+    SERVER shard2_server
+    OPTIONS (schema_name 'public', table_name 'orders_shard');
+```
+
+```sql
+EXPLAIN SELECT * FROM orders_global WHERE client_id = 5000;
+```
+
+<img width="685" height="79" alt="image" src="https://github.com/user-attachments/assets/8aee99a1-4132-469a-9438-78956cd78cd5" />
