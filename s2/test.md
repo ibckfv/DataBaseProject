@@ -159,3 +159,54 @@ ROLLBACK;
 
 ## 5 Задание 
 
+```sql
+CREATE TABLE shipment_stats (
+    region_code TEXT NOT NULL,
+    shipped_on DATE NOT NULL,
+    packages INTEGER NOT NULL,
+    avg_weight NUMERIC(8,2)
+) PARTITION BY LIST (region_code);
+
+CREATE TABLE shipment_stats_north PARTITION OF shipment_stats
+    FOR VALUES IN ('north');
+
+CREATE TABLE shipment_stats_south PARTITION OF shipment_stats
+    FOR VALUES IN ('south');
+
+CREATE TABLE shipment_stats_west PARTITION OF shipment_stats
+    FOR VALUES IN ('west');
+
+CREATE TABLE shipment_default PARTITION OF shipment_stats DEFAULT;
+```
+
+<img width="227" height="351" alt="image" src="https://github.com/user-attachments/assets/9f47f879-3975-4430-86fa-41ceee7730ca" />
+
+```sql
+EXPLAIN (ANALYZE, BUFFERS)
+SELECT region_code, shipped_on, packages
+FROM shipment_stats
+WHERE region_code = 'north';
+```
+
+- partition proning есть
+- в плане 1 секция
+
+<img width="971" height="186" alt="image" src="https://github.com/user-attachments/assets/45a6f3e0-a949-47ce-8a86-7a2102bd8e85" />
+
+```sql
+EXPLAIN (ANALYZE, BUFFERS)
+SELECT region_code, shipped_on, packages
+FROM shipment_stats
+WHERE shipped_on >= DATE '2025-02-10'
+  AND shipped_on < DATE '2025-02-15';
+```
+
+- partition proning нет
+- в плане 4 секции
+  
+<img width="948" height="408" alt="image" src="https://github.com/user-attachments/assets/4f511819-2f37-48e5-ab20-a9b08abb29a6" />
+<img width="949" height="72" alt="image" src="https://github.com/user-attachments/assets/1b6d0d06-74b5-4c72-90e5-7e940755decb" />
+
+- планировщик отсечет секции если они сделаны по столбцу который использован в фильтре
+- Ответьте, связан ли pruning напрямую с наличием обычного индекса: нет
+- Кратко объясните, зачем в этом задании нужна секция DEFAULT туда попадают данные, не подходящие не под одно условие секционирования
