@@ -104,3 +104,6 @@ SELECT * FROM users_by_id WHERE age = 29;
 
 ## ElasticSearch
 
+<img width="1445" height="327" alt="image" src="https://github.com/user-attachments/assets/7f30388b-87af-40cd-869a-fe3a5a61e64d" />
+
+
