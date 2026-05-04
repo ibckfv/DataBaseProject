@@ -106,4 +106,22 @@ SELECT * FROM users_by_id WHERE age = 29;
 
 <img width="1445" height="327" alt="image" src="https://github.com/user-attachments/assets/7f30388b-87af-40cd-869a-fe3a5a61e64d" />
 
+<img width="1065" height="714" alt="image" src="https://github.com/user-attachments/assets/57205575-9f3d-4c62-a328-ed65e320fc0c" />
 
+<img width="1583" height="984" alt="image" src="https://github.com/user-attachments/assets/8658132e-717d-4991-8f99-9c44ca22a0cd" />
+
+<img width="1570" height="988" alt="Снимок экрана 2026-05-04 183941" src="https://github.com/user-attachments/assets/bd65d21e-f65d-46cb-8b33-62d60a08b46e" />
+
+<img width="1085" height="790" alt="image" src="https://github.com/user-attachments/assets/3fc528ea-b594-4bd5-9731-18e32f9d5bf1" />
+
+<img width="1062" height="797" alt="image" src="https://github.com/user-attachments/assets/9ae101d6-0b93-4ee7-9a21-c2f58b68c3ef" />
+
+<img width="1072" height="791" alt="image" src="https://github.com/user-attachments/assets/ba26b0ce-08b4-4b82-afd9-509599a6b102" />
+
+<img width="1087" height="808" alt="image" src="https://github.com/user-attachments/assets/e2203413-caf6-4290-8f8a-e52dd1612df3" />
+
+<img width="1072" height="790" alt="image" src="https://github.com/user-attachments/assets/68468726-5d1a-42b1-9c82-822fcc05bc10" />
+
+<img width="1070" height="782" alt="image" src="https://github.com/user-attachments/assets/a14fa970-c5f4-4a59-b6f8-1b46d6763d2d" />
+
+<img width="1035" height="787" alt="image" src="https://github.com/user-attachments/assets/ba60e181-4a9e-42bc-8a14-25057c96fbca" />
