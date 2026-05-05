@@ -421,3 +421,284 @@ price: 1
 { name: 'IPhone 20', price: 99000 }
 ]
 ```
+
+## Neo4J
+
+## Подготовка
+
+docker-compose
+```
+version: "3.8"
+
+services:
+  neo4j:
+    image: neo4j:5
+    container_name: neo4j-demo
+    restart: unless-stopped
+    ports:
+      - "7474:7474"   # HTTP (Browser)
+      - "7687:7687"   # Bolt
+    environment:
+      - NEO4J_AUTH=neo4j/password
+    volumes:
+      - neo4j_data:/data
+      - neo4j_logs:/logs
+
+volumes:
+  neo4j_data:
+  neo4j_logs:
+```
+
+Датасет из README.md
+```cypher
+LOAD CSV WITH HEADERS FROM
+'https://raw.githubusercontent.com/Mario-cartoon/ArticleBD/main/Category.csv'
+AS line FIELDTERMINATOR ','
+MERGE (category:Category {categoryID: line.title})
+  ON CREATE SET category.title = line.title;
+
+LOAD CSV WITH HEADERS FROM
+'https://raw.githubusercontent.com/Mario-cartoon/ArticleBD/main/Articles.csv'
+AS line FIELDTERMINATOR ','
+MERGE (article:Article {articleID: line.title});
+
+LOAD CSV WITH HEADERS FROM
+'https://raw.githubusercontent.com/Mario-cartoon/ArticleBD/main/Reader.csv'
+AS line FIELDTERMINATOR ','
+MERGE (reader:Reader {readerID: line.name})
+  ON CREATE SET reader.nickname = line.nickname,reader.email = line.email;
+
+LOAD CSV WITH HEADERS FROM 'https://raw.githubusercontent.com/Mario-cartoon/ArticleBD/main/Category_articles.csv' AS line
+MATCH (category:Category {categoryID: line.title_category})
+MATCH (article:Article {articleID: line.title_article})
+CREATE (article)-[:IS_IN]->(category);
+
+LOAD CSV WITH HEADERS FROM 'https://raw.githubusercontent.com/Mario-cartoon/ArticleBD/main/read_articles.csv' AS line
+MATCH (reader:Reader {readerID: line.name})
+MATCH (article:Article {articleID: line.title_article})
+CREATE (reader)-[:READ]->(article);
+```
+
+![pic](./neo4j_pic/total_view.png)
+
+![pic](./neo4j_pic/begin_graph.png)
+
+
+---
+## Вставка
+
+### Добавить категорию 
+
+```cypher
+MERGE (category:Category {categoryID: 'tech-news'})
+ON CREATE SET category.title = 'Технологии и новости';
+```
+
+
+### Добавить статью
+
+```cypher
+MERGE (article:Article {articleID: 'neo4j-best-practices'})
+  ON CREATE SET article.title = 'Лучшие практики работы с Neo4j',
+                article.publishedAt = datetime();
+
+// Связать статью с категорией
+MATCH (article:Article {articleID: 'neo4j-best-practices'})
+MATCH (category:Category {categoryID: 'tech-news'})
+MERGE (article)-[:IS_IN]->(category);
+```
+
+
+### Добавить читателя, добавить связь с 3 статьями
+
+```cypher
+// Создаём читателя
+MERGE (reader:Reader {readerID: 'alice-wonder'})
+  ON CREATE SET reader.nickname = 'AliceW',
+                reader.email = 'alice@example.com';
+
+// Связываем с существующими статьями (3-5 штук)
+MATCH (reader:Reader {readerID: 'alice-wonder'})
+MATCH (article:Article) 
+WHERE article.articleID IN [
+  'neo4j-best-practices', 
+  'Gradient boosting with CatBoost (part 2/3)', 
+  'Clustering of clients. Analysis of the client\'s personality'
+]
+FOREACH (a IN [article] | 
+  MERGE (reader)-[:READ {readAt: datetime()}]->(a)
+);
+```
+
+
+---
+## Запросы
+
+### Отобразить всех пользователей, статьи и связи между ними
+
+```cypher
+MATCH (reader:Reader)-[r:READ]->(article:Article)
+RETURN reader.readerID AS reader, 
+       article.articleID AS article,
+       r.readAt AS readAt
+ORDER BY reader.readerID;
+```
+
+![pic](./neo4j_pic/query_1.png)
+
+### Выбрать пользователя и найти категории, которые он читает
+
+```cypher
+MATCH (reader:Reader {readerID: 'alice-wonder'})-[:READ]->(article:Article)-[:IS_IN]->(category:Category)
+RETURN DISTINCT category.categoryID AS categoryID,
+                category.title AS categoryTitle,
+                count(article) AS articlesRead
+ORDER BY articlesRead DESC;
+```
+
+![pic](./neo4j_pic/query_2.png)
+
+### Найти самых активных читателей (посчитать, кто читает больше всего статей)
+
+```cypher
+MATCH (reader:Reader)-[:READ]->(article:Article)
+RETURN reader.readerID AS reader,
+       reader.nickname AS nickname,
+       count(article) AS articlesCount
+ORDER BY articlesCount DESC
+LIMIT 10;
+```
+
+![pic](./neo4j_pic/query_3.png)
+
+### Выбрать статью и найти похожие статьи (статьи, которые читают те же пользователи)
+
+```cypher
+// Подставьте articleID целевой статьи
+MATCH (target:Article {articleID: 'neo4j-best-practices'})<-[:READ]-(reader:Reader)-[:READ]->(similar:Article)
+WHERE target <> similar
+WITH similar, count(DISTINCT reader) AS commonReaders
+ORDER BY commonReaders DESC
+LIMIT 10
+RETURN similar.articleID AS articleID,
+       similar.title AS title,
+       commonReaders AS similarityScore;
+```
+
+![pic](./neo4j_pic/query_4.png)
+
+### Рекомендации по категориям
+
+
+#### Найти категории, которые читает пользователь
+
+```cypher
+MATCH (reader:Reader {readerID: 'alice-wonder'})-[:READ]->(article:Article)-[:IS_IN]->(category:Category)
+RETURN DISTINCT category.categoryID AS categoryID,
+                category.title AS categoryTitle;
+```
+
+![pic](./neo4j_pic/query_5_1.png)
+
+#### Предложить статьи из этих категорий, которые он ещё не читал 
+
+
+```cypher
+MATCH (reader:Reader {readerID: 'alice-wonder'})-[:READ]->(readArticle:Article)-[:IS_IN]->(category:Category)
+WITH reader, collect(DISTINCT readArticle) AS readArticles, collect(DISTINCT category) AS readCategories
+
+UNWIND readCategories AS category
+MATCH (category)<-[:IS_IN]-(recommended:Article)
+WHERE NOT recommended IN readArticles
+AND NOT (reader)-[:READ]->(recommended)
+RETURN recommended.articleID AS articleID,
+recommended.title AS title,
+category.title AS categoryTitle
+ORDER BY categoryTitle
+LIMIT 10;
+```
+
+![pic](./neo4j_pic/query_5_2.png)
+
+## Qdrant
+
+```
+services:
+  qdrant:
+    image: qdrant/qdrant:latest
+    container_name: qdrant
+    ports:
+      - "6333:6333"  # HTTP REST API + Dashboard
+      - "6334:6334"  # gRPC API
+    volumes:
+      - qdrant_data:/qdrant/storage
+      - qdrant_snapshots:/qdrant/snapshots
+    environment:
+      - QDRANT__SERVICE__HTTP_PORT=6333
+      - QDRANT__SERVICE__GRPC_PORT=6334
+      - QDRANT__LOG_LEVEL=INFO
+      - QDRANT__CLUSTER__ENABLED=false
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:6333/healthz"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+
+volumes:
+  qdrant_data:
+    driver: local
+  qdrant_snapshots:
+    driver: local
+```
+
+## Redis
+
+### Часть 1
+docker run -d --name redis -p 6379:6379 redis
+
+docker ps
+
+docker exec -it redis redis-cli ping
+
+![Скриншот](../img/100.png)
+
+### Часть 2 
+```
+redis-cli 
+INCR article:10:views
+INCR article:10:views
+INCR article:10:views
+```
+![Скриншот](../img/101.png)
+
+### Часть 3 
+```
+ZADD articles:leaderboard 300 article:1 200 article:2 150 article:3 1000 article:4
+
+ZREVRANGE articles:leaderboard 0 2
+
+ZREVRANGE articles:leaderboard 0 2 WITHSCORES
+```
+![Скриншот](../img/102.png)
+```
+ZINCRBY articles:leaderboard 5000 article:3
+
+ZREVRANGE articles:leaderboard 0 2 WITHSCORES
+```
+![Скриншот](../img/103.png)
+
+### Часть 4 
+
+```
+INCR user:123:likes
+INCR user:123:likes
+INCR user:123:likes
+
+EXPIRE user:123:likes 60
+
+GET user:123:likes
+TTL user:123:likes
+```
+![Скриншот](../img/104.png)
