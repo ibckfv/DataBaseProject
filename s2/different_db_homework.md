@@ -125,3 +125,299 @@ SELECT * FROM users_by_id WHERE age = 29;
 <img width="1070" height="782" alt="image" src="https://github.com/user-attachments/assets/a14fa970-c5f4-4a59-b6f8-1b46d6763d2d" />
 
 <img width="1035" height="787" alt="image" src="https://github.com/user-attachments/assets/ba60e181-4a9e-42bc-8a14-25057c96fbca" />
+
+## InfluxDB
+
+# Отчёт по домашнему заданию: работа с InfluxDB
+
+## Цель работы
+
+Освоить:
+
+* настройку InfluxDB в Docker
+* вставку данных через Line Protocol
+* выполнение запросов
+* агрегацию данных
+
+---
+
+## Шаг 0. Настройка окружения (Docker)
+
+```yaml
+version: '3.8'
+
+services:
+  influxdb:
+    image: influxdb:2.7
+    ports:
+      - "8086:8086"
+    volumes:
+      - influx-data:/var/lib/influxdb2
+    environment:
+      DOCKER_INFLUXDB_INIT_MODE: setup
+      DOCKER_INFLUXDB_INIT_USERNAME: admin
+      DOCKER_INFLUXDB_INIT_PASSWORD: password123
+      DOCKER_INFLUXDB_INIT_ORG: myorg
+      DOCKER_INFLUXDB_INIT_BUCKET: mydb
+      DOCKER_INFLUXDB_INIT_ADMIN_TOKEN: mytoken
+
+volumes:
+  influx-data:
+```
+
+## Шаг 1. Доступ к системе
+
+Веб-интерфейс доступен по адресу:
+
+```
+http://localhost:8086
+```
+
+Bucket `mydb` был создан автоматически.
+
+---
+
+## Шаг 2. Вставка данных
+
+```bash
+curl -X POST "http://localhost:8086/api/v2/write?bucket=mydb&org=myorg&precision=s" \
+  -H "Authorization: Token mytoken" \
+  --data-raw "temperature,location=room1 value=23"
+
+curl -X POST "http://localhost:8086/api/v2/write?bucket=mydb&org=myorg&precision=s" \
+  -H "Authorization: Token mytoken" \
+  --data-raw "temperature,location=room1 value=25"
+
+curl -X POST "http://localhost:8086/api/v2/write?bucket=mydb&org=myorg&precision=s" \
+  -H "Authorization: Token mytoken" \
+  --data-raw "temperature,location=room2 value=20"
+
+curl -X POST "http://localhost:8086/api/v2/write?bucket=mydb&org=myorg&precision=s" \
+  -H "Authorization: Token mytoken" \
+  --data-raw "temperature,location=room2 value=22"
+```
+
+---
+
+## Шаг 3. Проверка данных
+
+```sql
+from(bucket: "mydb")
+  |> range(start: -1h)
+```
+
+---
+
+## Шаг 4. Выборка за последние 5 минут
+
+```sql
+from(bucket: "mydb")
+  |> range(start: -5m)
+```
+
+---
+
+## Шаг 5. Агрегация данных
+
+```sql
+from(bucket: "mydb")
+  |> range(start: -1h)
+  |> group(columns: ["location"])
+  |> mean()
+```
+
+---
+
+## Результат
+
+| location | avg(value) |
+| -------- | ---------- |
+| room1    | ~24        |
+| room2    | ~21        |
+
+---
+
+## MongoDB
+
+### Подготовка
+
+```
+docker run -d -p 27017:27017 mongo
+
+docker exec -it boring_montalcini mongosh
+
+use shopDB
+```
+
+### Задание 1.
+
+```sql
+db.products.insertMany([
+    {
+        name: "Смартфон-раскладушка X99",
+        category: "Мобильные телефоны",
+        price: 74990,
+        inStock: true,
+        manufacturer: {
+            name: "Samsung",
+            country: "Южная Корея"
+        }
+    },
+    {
+        name: "Ноутбук MacBook Air M3",
+        category: "Компьютеры",
+        price: 119990,
+        inStock: true,
+        manufacturer: {
+            name: "Apple",
+            country: "США"
+        }
+    },
+    {
+        name: "Беспроводные наушники WH-100XM2",
+        category: "Аудиотехника",
+        price: 9990,
+        inStock: false,
+        manufacturer: {
+            name: "Sony",
+            country: "Япония"
+        }
+    },
+    {
+        name: "Умная колонка Яндекс Станция Макс",
+        category: "Умный дом",
+        price: 16990,
+        inStock: true,
+        manufacturer: {
+            name: "Яндекс",
+            country: "Россия"
+        }
+    }
+    ,
+    {
+        name: "IPhone 20",
+        category: "Мобильные телефоны",
+        price: 99000,
+        inStock: false,
+        manufacturer: {
+            name: "Apple",
+            country: "Iran"
+        }
+    }
+])
+```
+
+```sql
+
+acknowledged: true,
+insertedIds: {
+'0': ObjectId('69de61202b6449317944ba8d'),
+'1': ObjectId('69de61202b6449317944ba8e'),
+'2': ObjectId('69de61202b6449317944ba8f'),
+'3': ObjectId('69de61202b6449317944ba90'),
+'4': ObjectId('69de61202b6449317944ba91')
+}
+}
+```
+
+
+### Задание 2.
+
+```sql
+
+db.products.find().pretty()
+
+
+
+[
+{
+_id: ObjectId('69de61202b6449317944ba8d'),
+name: 'Смартфон-раскладушка X99',
+category: 'Мобильные телефоны',
+price: 74990,
+inStock: true,
+manufacturer: { name: 'Samsung', country: 'Южная Корея' }
+},
+{
+_id: ObjectId('69de61202b6449317944ba8e'),
+name: 'Ноутбук MacBook Air M3',
+category: 'Компьютеры',
+price: 119990,
+inStock: true,
+manufacturer: { name: 'Apple', country: 'США' }
+},
+{
+_id: ObjectId('69de61202b6449317944ba8f'),
+name: 'Беспроводные наушники WH-100XM2',
+category: 'Аудиотехника',
+price: 9990,
+inStock: false,
+manufacturer: { name: 'Sony', country: 'Япония' }
+},
+{
+_id: ObjectId('69de61202b6449317944ba90'),
+name: 'Умная колонка Яндекс Станция Макс',
+category: 'Умный дом',
+price: 16990,
+inStock: true,
+manufacturer: { name: 'Яндекс', country: 'Россия' }
+},
+{
+_id: ObjectId('69de61202b6449317944ba91'),
+name: 'IPhone 20',
+category: 'Мобильные телефоны',
+price: 99000,
+inStock: false,
+manufacturer: { name: 'Apple', country: 'Iran' }
+}
+]
+```
+
+```sql
+
+db.products.find({ category: "Мобильные телефоны" }).pretty()
+
+
+
+[
+{
+_id: ObjectId('69de61202b6449317944ba8d'),
+name: 'Смартфон-раскладушка X99',
+category: 'Мобильные телефоны',
+price: 74990,
+inStock: true,
+manufacturer: { name: 'Samsung', country: 'Южная Корея' }
+},
+{
+_id: ObjectId('69de61202b6449317944ba91'),
+name: 'IPhone 20',
+category: 'Мобильные телефоны',
+price: 99000,
+inStock: false,
+manufacturer: { name: 'Apple', country: 'Iran' }
+}
+]
+```
+
+### Задание 3.
+
+```sql
+
+db.products.find(
+{
+category: "Мобильные телефоны",
+price: { $gt: 10000 }
+},
+{
+_id: 0,
+name: 1,
+price: 1
+}
+).pretty()
+
+
+[
+{ name: 'Смартфон-раскладушка X99', price: 74990 },
+{ name: 'IPhone 20', price: 99000 }
+]
+```
