@@ -239,8 +239,8 @@ use shopDB
 ```sql
 db.products.insertMany([
     {
-        name: "Смартфон-раскладушка X99",
-        category: "Мобильные телефоны",
+        name: "Складной смартфон X99",
+        category: "Мобильные устройства",
         price: 74990,
         inStock: true,
         manufacturer: {
@@ -249,8 +249,8 @@ db.products.insertMany([
         }
     },
     {
-        name: "Ноутбук MacBook Air M3",
-        category: "Компьютеры",
+        name: "Ноутбук MacBook Air на M3",
+        category: "Компьютерная техника",
         price: 119990,
         inStock: true,
         manufacturer: {
@@ -259,8 +259,8 @@ db.products.insertMany([
         }
     },
     {
-        name: "Беспроводные наушники WH-100XM2",
-        category: "Аудиотехника",
+        name: "Наушники беспроводные WH-100XM2",
+        category: "Аудио",
         price: 9990,
         inStock: false,
         manufacturer: {
@@ -269,19 +269,18 @@ db.products.insertMany([
         }
     },
     {
-        name: "Умная колонка Яндекс Станция Макс",
-        category: "Умный дом",
+        name: "Смарт-колонка Яндекс Станция Макс",
+        category: "Устройства для умного дома",
         price: 16990,
         inStock: true,
         manufacturer: {
             name: "Яндекс",
             country: "Россия"
         }
-    }
-    ,
+    },
     {
         name: "IPhone 20",
-        category: "Мобильные телефоны",
+        category: "Мобильные устройства",
         price: 99000,
         inStock: false,
         manufacturer: {
@@ -312,37 +311,35 @@ insertedIds: {
 
 db.products.find().pretty()
 
-
-
 [
 {
 _id: ObjectId('69de61202b6449317944ba8d'),
-name: 'Смартфон-раскладушка X99',
-category: 'Мобильные телефоны',
+name: 'Складной смартфон X99',
+category: 'Мобильные устройства',
 price: 74990,
 inStock: true,
 manufacturer: { name: 'Samsung', country: 'Южная Корея' }
 },
 {
 _id: ObjectId('69de61202b6449317944ba8e'),
-name: 'Ноутбук MacBook Air M3',
-category: 'Компьютеры',
+name: 'Ноутбук MacBook Air на M3',
+category: 'Компьютерная техника',
 price: 119990,
 inStock: true,
 manufacturer: { name: 'Apple', country: 'США' }
 },
 {
 _id: ObjectId('69de61202b6449317944ba8f'),
-name: 'Беспроводные наушники WH-100XM2',
-category: 'Аудиотехника',
+name: 'Наушники беспроводные WH-100XM2',
+category: 'Аудио',
 price: 9990,
 inStock: false,
 manufacturer: { name: 'Sony', country: 'Япония' }
 },
 {
 _id: ObjectId('69de61202b6449317944ba90'),
-name: 'Умная колонка Яндекс Станция Макс',
-category: 'Умный дом',
+name: 'Смарт-колонка Яндекс Станция Макс',
+category: 'Устройства для умного дома',
 price: 16990,
 inStock: true,
 manufacturer: { name: 'Яндекс', country: 'Россия' }
@@ -350,7 +347,7 @@ manufacturer: { name: 'Яндекс', country: 'Россия' }
 {
 _id: ObjectId('69de61202b6449317944ba91'),
 name: 'IPhone 20',
-category: 'Мобильные телефоны',
+category: 'Мобильные устройства',
 price: 99000,
 inStock: false,
 manufacturer: { name: 'Apple', country: 'Iran' }
@@ -360,15 +357,13 @@ manufacturer: { name: 'Apple', country: 'Iran' }
 
 ```sql
 
-db.products.find({ category: "Мобильные телефоны" }).pretty()
-
-
+db.products.find({ category: "Мобильные устройства" }).pretty()
 
 [
 {
 _id: ObjectId('69de61202b6449317944ba8d'),
-name: 'Смартфон-раскладушка X99',
-category: 'Мобильные телефоны',
+name: 'Складной смартфон X99',
+category: 'Мобильные устройства',
 price: 74990,
 inStock: true,
 manufacturer: { name: 'Samsung', country: 'Южная Корея' }
@@ -376,7 +371,7 @@ manufacturer: { name: 'Samsung', country: 'Южная Корея' }
 {
 _id: ObjectId('69de61202b6449317944ba91'),
 name: 'IPhone 20',
-category: 'Мобильные телефоны',
+category: 'Мобильные устройства',
 price: 99000,
 inStock: false,
 manufacturer: { name: 'Apple', country: 'Iran' }
@@ -390,7 +385,7 @@ manufacturer: { name: 'Apple', country: 'Iran' }
 
 db.products.find(
 {
-category: "Мобильные телефоны",
+category: "Мобильные устройства",
 price: { $gt: 10000 }
 },
 {
@@ -400,9 +395,8 @@ price: 1
 }
 ).pretty()
 
-
 [
-{ name: 'Смартфон-раскладушка X99', price: 74990 },
+{ name: 'Складной смартфон X99', price: 74990 },
 { name: 'IPhone 20', price: 99000 }
 ]
 ```
