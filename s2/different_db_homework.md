@@ -462,11 +462,6 @@ MATCH (article:Article {articleID: line.title_article})
 CREATE (reader)-[:READ]->(article);
 ```
 
-![pic](./neo4j_pic/total_view.png)
-
-![pic](./neo4j_pic/begin_graph.png)
-
-
 ---
 ## Вставка
 
@@ -527,8 +522,6 @@ RETURN reader.readerID AS reader,
 ORDER BY reader.readerID;
 ```
 
-![pic](./neo4j_pic/query_1.png)
-
 ### Выбрать пользователя и найти категории, которые он читает
 
 ```cypher
@@ -539,7 +532,6 @@ RETURN DISTINCT category.categoryID AS categoryID,
 ORDER BY articlesRead DESC;
 ```
 
-![pic](./neo4j_pic/query_2.png)
 
 ### Найти самых активных читателей (посчитать, кто читает больше всего статей)
 
@@ -552,7 +544,6 @@ ORDER BY articlesCount DESC
 LIMIT 10;
 ```
 
-![pic](./neo4j_pic/query_3.png)
 
 ### Выбрать статью и найти похожие статьи (статьи, которые читают те же пользователи)
 
@@ -568,7 +559,6 @@ RETURN similar.articleID AS articleID,
        commonReaders AS similarityScore;
 ```
 
-![pic](./neo4j_pic/query_4.png)
 
 ### Рекомендации по категориям
 
@@ -581,7 +571,6 @@ RETURN DISTINCT category.categoryID AS categoryID,
                 category.title AS categoryTitle;
 ```
 
-![pic](./neo4j_pic/query_5_1.png)
 
 #### Предложить статьи из этих категорий, которые он ещё не читал 
 
@@ -601,7 +590,6 @@ ORDER BY categoryTitle
 LIMIT 10;
 ```
 
-![pic](./neo4j_pic/query_5_2.png)
 
 ## Qdrant
 
@@ -645,7 +633,6 @@ docker ps
 
 docker exec -it redis redis-cli ping
 
-![Скриншот](../img/100.png)
 
 ### Часть 2 
 ```
@@ -654,7 +641,6 @@ INCR article:10:views
 INCR article:10:views
 INCR article:10:views
 ```
-![Скриншот](../img/101.png)
 
 ### Часть 3 
 ```
@@ -664,13 +650,11 @@ ZREVRANGE articles:leaderboard 0 2
 
 ZREVRANGE articles:leaderboard 0 2 WITHSCORES
 ```
-![Скриншот](../img/102.png)
 ```
 ZINCRBY articles:leaderboard 5000 article:3
 
 ZREVRANGE articles:leaderboard 0 2 WITHSCORES
 ```
-![Скриншот](../img/103.png)
 
 ### Часть 4 
 
@@ -684,4 +668,3 @@ EXPIRE user:123:likes 60
 GET user:123:likes
 TTL user:123:likes
 ```
-![Скриншот](../img/104.png)
