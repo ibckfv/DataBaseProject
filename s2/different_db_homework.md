@@ -128,20 +128,7 @@ SELECT * FROM users_by_id WHERE age = 29;
 
 ## InfluxDB
 
-# Отчёт по домашнему заданию: работа с InfluxDB
-
-## Цель работы
-
-Освоить:
-
-* настройку InfluxDB в Docker
-* вставку данных через Line Protocol
-* выполнение запросов
-* агрегацию данных
-
----
-
-## Шаг 0. Настройка окружения (Docker)
+## Шаг 0 Docker
 
 ```yaml
 version: '3.8'
@@ -165,7 +152,7 @@ volumes:
   influx-data:
 ```
 
-## Шаг 1. Доступ к системе
+## Шаг 1 Доступ к системе
 
 Веб-интерфейс доступен по адресу:
 
@@ -177,7 +164,7 @@ Bucket `mydb` был создан автоматически.
 
 ---
 
-## Шаг 2. Вставка данных
+## Шаг 2 Вставка данных
 
 ```bash
 curl -X POST "http://localhost:8086/api/v2/write?bucket=mydb&org=myorg&precision=s" \
@@ -199,7 +186,7 @@ curl -X POST "http://localhost:8086/api/v2/write?bucket=mydb&org=myorg&precision
 
 ---
 
-## Шаг 3. Проверка данных
+## Шаг 3 Проверка данных
 
 ```sql
 from(bucket: "mydb")
@@ -208,7 +195,7 @@ from(bucket: "mydb")
 
 ---
 
-## Шаг 4. Выборка за последние 5 минут
+## Шаг 4 Выборка за последние 5 минут
 
 ```sql
 from(bucket: "mydb")
@@ -217,7 +204,7 @@ from(bucket: "mydb")
 
 ---
 
-## Шаг 5. Агрегация данных
+## Шаг 5 Агрегация данных
 
 ```sql
 from(bucket: "mydb")
@@ -238,8 +225,6 @@ from(bucket: "mydb")
 ---
 
 ## MongoDB
-
-### Подготовка
 
 ```
 docker run -d -p 27017:27017 mongo
@@ -423,8 +408,6 @@ price: 1
 ```
 
 ## Neo4J
-
-## Подготовка
 
 docker-compose
 ```
